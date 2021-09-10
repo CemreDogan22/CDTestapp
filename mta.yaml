@@ -1,0 +1,125 @@
+_schema-version: "3.1"
+ID: CDTestApp
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: CDTestApp-srv
+  type: nodejs
+  path: srv
+  requires:
+  - name: CDTestApp-db
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+- name: CDTestApp-db-deployer
+  type: hdb
+  path: db
+  requires:
+  - name: CDTestApp-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: CDTestApp-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: CDTestApp-destination-service
+    parameters:
+      content-target: true
+  - name: CDTestApp_html_repo_host
+    parameters:
+      service-key:
+        name: CDTestApp_html_repo_host-key
+  - name: uaa_CDTestApp
+    parameters:
+      service-key:
+        name: uaa_CDTestApp-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: cdtest_app_CDTestApp_html_repo_host
+          ServiceInstanceName: CDTestApp-html5-app-host-service
+          ServiceKeyName: CDTestApp_html_repo_host-key
+          sap.cloud.service: cdtest.app
+        - Authentication: OAuth2UserTokenExchange
+          Name: cdtest_app_uaa_CDTestApp
+          ServiceInstanceName: CDTestApp-xsuaa-service
+          ServiceKeyName: uaa_CDTestApp-key
+          sap.cloud.service: cdtest.app
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: CDTestApp-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: CDTestApp_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - testapp.zip
+      name: testapp
+      target-path: resources/
+- name: testapp
+  type: html5
+  path: app/testapp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: CDTestApp-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-service-name: ${service-name}
+- name: CDTestApp-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: CDTestApp-destination-service
+    service-plan: lite
+- name: CDTestApp_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: CDTestApp-html5-app-host-service
+    service-plan: app-host
+- name: uaa_CDTestApp
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: CDTestApp-xsuaa-service
+    service-plan: application
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production
