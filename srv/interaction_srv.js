@@ -18,7 +18,7 @@ module.exports = srv => {
 
         if (req.element1_code == 1) {
             req.testbool = false
-        } else if (req.element1_code == 0) {
+        } else if (req.element1_code == 0) { 
             req.testbool = true
         }
         console.log('PatchAfter2' + ' ' + req.element1_code + ' ' + req.testbool)
