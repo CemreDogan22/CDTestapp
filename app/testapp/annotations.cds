@@ -50,16 +50,3 @@ annotate CatalogService.Main with @Common : {
         ],
     },
  };
-
-
-/*annotate CatalogService.Main with@(Common : {​SideEffects #MandatoryReadOnlyValidation : {​
-SourceProperties : [
-        element1_code
-//  updateHidden
-    ],
-TargetProperties : [
-    element2,
-    element3
-    ]
-}​}​);
-*/
