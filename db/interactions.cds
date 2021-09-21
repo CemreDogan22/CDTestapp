@@ -7,6 +7,7 @@ entity Mainentitiy : cuid {
     element2 : String;
     element3 : String;
     element4 : Association to Options;
+    uihidden: Boolean not null default false;
 }
 
 entity YesNo : CommonCodeList {}

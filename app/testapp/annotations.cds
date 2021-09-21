@@ -31,9 +31,35 @@ annotate service.Main with @(
     UI.FieldGroup#Main : {
         Data: [
             {Value: element1_code, Label : 'Choose between Yes or No'},
-            {Value: element2, Label : 'Hidden/Visible Element', ![@UI.Hidden] : testbool},
-            {Value: element3, Label : 'Hidden/Visible Element', ![@UI.Hidden] : testbool},
+            {Value: element2, Label : 'Hidden/Visible Element', ![@UI.Hidden] : uihidden},
+            {Value: element3, Label : 'Hidden/Visible Element', ![@UI.Hidden] : uihidden},
             {Value: element4_code, Label : 'Choose multiple options'}
         ]        
     }
 );
+
+annotate CatalogService.Main with @Common : { 
+    SideEffects #TestSideEffect : {
+        $Type : 'Common.SideEffectsType',
+        SourceProperties : [
+            element1_code
+        ],
+        TargetProperties : [
+            'element2',
+            'element3'
+        ],
+    },
+ };
+
+
+/*annotate CatalogService.Main with@(Common : {​SideEffects #MandatoryReadOnlyValidation : {​
+SourceProperties : [
+        element1_code
+//  updateHidden
+    ],
+TargetProperties : [
+    element2,
+    element3
+    ]
+}​}​);
+*/
